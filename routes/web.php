@@ -13,4 +13,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/', fn () => redirect()->route('dashboard'));
     Route::get('/dashboard', fn () => view('dashboard'))->name('dashboard');
+
+    // Khusus Admin
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/admin-test', fn () => 'Halaman khusus admin')->name('admin.test');
+        // manajemen pengguna, audit log, dst.
+    });
 });
