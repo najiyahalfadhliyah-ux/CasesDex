@@ -1,32 +1,31 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Login - Arsip Kasus</title>
-</head>
-<body>
-    <main>
-        <h1>Login</h1>
+@extends('layouts.guest')
+
+@section('title', 'Login - Arsip Kasus')
+
+@section('content')
+<main class="min-vh-100 d-flex align-items-center justify-content-center p-3">
+    <div class="card card-narrow p-4 w-100">
+        <h1 class="h4 fw-bold text-center mb-4">Masuk</h1>
 
         <form action="{{ route('login') }}" method="POST">
             @csrf
 
-            <div>
-                <label for="login">Email atau Username</label>
-                <input id="login" name="login" type="text" value="{{ old('login') }}" required autofocus>
+            <div class="mb-3">
+                <label for="login" class="form-label">Email atau Username</label>
+                <input id="login" name="login" type="text" value="{{ old('login') }}"
+                       class="form-control @error('login') is-invalid @enderror" required autofocus>
                 @error('login')
-                    <p style="color:red">{{ $message }}</p>
+                    <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
             </div>
 
-            <div>
-                <label for="password">Kata Sandi</label>
-                <input id="password" name="password" type="password" required>
+            <div class="mb-4">
+                <label for="password" class="form-label">Kata Sandi</label>
+                <input id="password" name="password" type="password" class="form-control" required>
             </div>
 
-            <button type="submit">Masuk</button>
+            <button type="submit" class="btn btn-accent w-100">Masuk</button>
         </form>
-    </main>
-</body>
-</html>
+    </div>
+</main>
+@endsection

@@ -1,16 +1,7 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard</title>
-</head>
-<body>
-    <h1>Dashboard</h1>
-    <p>Halo, {{ auth()->user()->name }} ({{ auth()->user()->role }})</p>
+@extends('layouts.app')
 
-    <form action="{{ route('logout') }}" method="POST">
-        @csrf
-        <button type="submit">Logout</button>
-    </form>
-</body>
-</html>
+@section('title', 'Dashboard - Arsip Kasus')
+
+@section('page')
+    <h1 class="h3 fw-bold">Dashboard</h1>
+@endsection

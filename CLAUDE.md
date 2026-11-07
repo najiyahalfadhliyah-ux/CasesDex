@@ -50,7 +50,7 @@ Relasi: satu kasus punya banyak evidence/suspects/timeline_events. Satu evidence
 - [x] Tahap 2a: login/logout (`AuthController`, view `auth.login`, `dashboard`)
 - [x] Tahap 2b: middleware `EnsureRole` + alias `role` di `bootstrap/app.php`
 - [x] Tahap 2c: **landing page publik** di `/` (lihat di bawah)
-- [ ] Tahap 2d: layout navbar + sidebar, menu sesuai peran, dashboard kosong
+- [x] Tahap 2d: layout navbar + sidebar, menu sesuai peran, dashboard kosong (Bootstrap 5 CDN, Inter, warna di `public/css/app.css`, `layouts.guest` + `layouts.app`, `errors/403`)
 - [ ] Tahap 3: manajemen pengguna (admin)
 - [ ] Tahap 4: CRUD kasus (Form Request, nomor otomatis `AK-2026-0001`, Policy, soft delete)
 - [ ] Tahap 5: barang bukti + SHA-256 + hash_checks
