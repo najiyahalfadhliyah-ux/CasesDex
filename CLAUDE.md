@@ -4,6 +4,7 @@ Aplikasi web untuk mengarsipkan kasus, barang bukti fisik/digital, pihak terkait
 
 ## Stack
 - Laravel 13, PHP, MySQL (database `arsip_kasus`), Blade, Chart.js untuk grafik.
+- Bootstrap 5.3 + Bootstrap Icons 1.11 (CDN), font IBM Plex Sans/Mono. Tanpa Tailwind, tanpa build step.
 - Autentikasi ditulis sendiri (tanpa Breeze/Jetstream).
 - Bahasa UI dan pesan: Bahasa Indonesia.
 
@@ -50,7 +51,7 @@ Relasi: satu kasus punya banyak evidence/suspects/timeline_events. Satu evidence
 - [x] Tahap 2a: login/logout (`AuthController`, view `auth.login`, `dashboard`)
 - [x] Tahap 2b: middleware `EnsureRole` + alias `role` di `bootstrap/app.php`
 - [x] Tahap 2c: **landing page publik** di `/` (lihat di bawah)
-- [x] Tahap 2d: layout navbar + sidebar, menu sesuai peran, dashboard kosong (Bootstrap 5 CDN, Inter, warna di `public/css/app.css`, `layouts.guest` + `layouts.app`, `errors/403`)
+- [x] Tahap 2d: layout navbar + sidebar, menu sesuai peran, dashboard kosong (`layouts.guest` + `layouts.app`, `errors/403`), desain ulang "Berkas Resmi" (lihat Sistem desain)
 - [ ] Tahap 3: manajemen pengguna (admin)
 - [ ] Tahap 4: CRUD kasus (Form Request, nomor otomatis `AK-2026-0001`, Policy, soft delete)
 - [ ] Tahap 5: barang bukti + SHA-256 + hash_checks
@@ -59,6 +60,33 @@ Relasi: satu kasus punya banyak evidence/suspects/timeline_events. Satu evidence
 - [ ] Tahap 8: pencarian dan filter
 - [ ] Tahap 9: dashboard statistik (Chart.js) dan laporan cetak
 - [ ] Tahap 10: pengujian dan pengecekan keamanan
+- [ ] Tahap 11: desain ulang UI/UX (ui-ux-pro-max + frontend-design)
+
+## Aturan UI selama tahap fungsi (Tahap 3-9)
+- Ikuti sistem desain "Berkas Resmi" yang sudah ada. Jangan
+  mendesain ulang atau mengubah gaya.
+- Pakai komponen dan class yang sudah ada; kalau butuh komponen
+  baru, buat sebagai Blade component dan tambahkan gayanya di
+  public/css/app.css dengan CSS variable.
+- Tampilan fungsional dan konsisten saja. Polesan UI/UX dikerjakan
+  di tahap akhir (Tahap 11).
+
+## Sistem desain "Berkas Resmi" (wajib diikuti Tahap 3 dst.)
+Gaya flat, tenang, rata kiri, nuansa map arsip instansi. Semua warna dan gaya hanya di `public/css/app.css` lewat CSS variable. Di Blade jangan menulis hex; pakai kelas atau `var(--...)`.
+
+- **Warna**: `--primary #1E3A8A` (navy: sidebar, judul, tombol utama `.btn-primary`), `--primary-dark #172554` (hero, hover), `--accent #B45309` (emas tua: CTA `.btn-accent`, fokus), `--bg #F8FAFC`, `--surface #FFF`, `--text #0F172A`, `--muted #475569`, `--border #E2E8F0`, `--danger #DC2626`. Variabel `--bs-*` sudah dipetakan ke token ini.
+- **Font**: IBM Plex Sans untuk semua teks. IBM Plex Mono (`.font-mono` / `.case-number`) **hanya** untuk nomor kasus, hash SHA-256, dan kode error, bukan untuk label biasa. Angka statistik memakai Plex Sans `tabular-nums`.
+- **Ikon**: Bootstrap Icons `<i class="bi bi-..." aria-hidden="true"></i>`, selalu berdampingan dengan teks. Tombol yang hanya berisi ikon wajib punya `aria-label`. Jangan pakai emoji.
+- **Teks UI**: sentence case ("Kasus terbaru", bukan "KASUS TERBARU"). Tanpa label ALL-CAPS di atas judul.
+- **Kartu**: `.card` (border 1px, radius 10px, tanpa bayangan). Judul kartu: `.card-header` + `<h2 class="card-title">`. Statistik: `.card.stat-card` berisi `.stat-icon`, `.stat-value`, `.stat-label`.
+- **Tabel**: bungkus dengan `.card` lalu `.table-responsive` > `table.table.table-app`, `<th scope="col">`. Data kosong: satu baris `<td colspan class="empty-state">` dengan ikon dan kalimat ajakan.
+- **Form**: label selalu terlihat (`.form-label`), jangan hanya placeholder. Error di bawah field (`.is-invalid` + `.invalid-feedback`, ditambah `aria-describedby`). Input dan tombol tinggi minimal 44px (sudah diatur CSS). Ikon depan pakai `.input-group-text`.
+- **Badge status kasus**: `<span class="badge-status badge-{{ $case->status }}">`. Kelasnya `badge-dalam_penanganan`, `badge-selesai`, `badge-ditutup`, `badge-ditangguhkan`. Latarnya lembut dengan titik di depan teks. Badge peran: `.badge.bg-brand`.
+- **Keadaan kosong**: `.empty-state` dengan ikon `bi` dan kalimat yang menjelaskan langkah berikutnya.
+- **Layout**: halaman setelah login memakai `@extends('layouts.app')`, `@section('title')`, `@section('heading')` (judul navbar), dan `@section('page')`. Menu sidebar berupa `.nav-link` dengan ikon, grup `.nav-section` ("Utama", "Administrasi" khusus admin), menu aktif lewat `request()->routeIs()` + `aria-current="page"`.
+- **Chart.js**: muat lewat `@push('scripts')` di halaman yang memakainya (layout punya `@stack('scripts')`). Dashboard sudah punya `<canvas id="chartKasus" hidden>`; hapus `hidden` dan empty-state saat data ada. Warna grafik diambil dari variabel status.
+- **Aksesibilitas**: skip link "Lewati ke konten" (`#konten`), outline fokus emas jangan dihapus, `prefers-reduced-motion` dihormati, kontras teks minimal 4,5:1.
+- **Responsif**: sidebar `offcanvas-lg` (di bawah 992px jadi menu geser). Grid Bootstrap `col-6 col-xl-3` untuk statistik, `col-lg-8/4` untuk panel.
 
 ## Landing page (belum ada di PRD)
 Halaman publik di `/` untuk tamu yang belum login: nama sistem, penjelasan singkat fitur, tombol "Masuk" ke `/login`. Pengguna yang sudah login langsung diarahkan ke `/dashboard`. Tidak boleh menampilkan data kasus apa pun. Route `/` saat ini masih redirect ke dashboard di dalam grup `auth`, perlu dipindah ke luar grup.
