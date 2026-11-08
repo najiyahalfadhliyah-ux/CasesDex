@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Landing page publik: tamu lihat halaman, yang sudah login langsung ke dashboard
@@ -19,6 +20,10 @@ Route::middleware('auth')->group(function () {
     // Khusus Admin
     Route::middleware('role:admin')->group(function () {
         Route::get('/admin-test', fn () => 'Halaman khusus admin')->name('admin.test');
-        // manajemen pengguna, audit log, dst.
+
+        // Manajemen pengguna: tanpa destroy, akun dinonaktifkan bukan dihapus
+        Route::resource('users', UserController::class)->except(['show', 'destroy']);
+        Route::patch('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
+        // audit log, dst.
     });
 });

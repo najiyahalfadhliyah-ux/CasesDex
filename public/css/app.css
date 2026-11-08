@@ -120,6 +120,17 @@ h1, h2, h3, .h1, .h2, .h3 { color: var(--primary-dark); letter-spacing: -.01em; 
 .badge-ditutup          { background: var(--status-ditutup-bg); color: var(--status-ditutup); }
 .badge-ditangguhkan     { background: var(--status-ditangguhkan-bg); color: var(--status-ditangguhkan); }
 
+/* Status akun pengguna (memakai warna status yang sama) */
+.badge-aktif    { background: var(--status-selesai-bg); color: var(--status-selesai); }
+.badge-nonaktif { background: var(--status-ditutup-bg); color: var(--status-ditutup); }
+.badge-role-petugas { background: var(--surface); color: var(--primary); border: 1px solid var(--primary); }
+
+/* Kartu form: lebar dibatasi agar baris input tidak terlalu panjang */
+.form-card { max-width: 820px; }
+
+/* Pesan flash dan ringkasan error */
+.alert { border-radius: var(--radius); }
+
 /* ===== Landing page ===== */
 .hero {
     color: #fff;

@@ -48,11 +48,11 @@ Relasi: satu kasus punya banyak evidence/suspects/timeline_events. Satu evidence
 ## Status pengerjaan
 - [x] Tahap 0: setup, MySQL, GitHub
 - [x] Tahap 1: migration 7 tabel, model + relasi, seeder (sudah di `main`)
-- [x] Tahap 2a: login/logout (`AuthController`, view `auth.login`, `dashboard`)
+- [x] Tahap 2a: login/logout (`AuthController`, view `auth.login`, `dashboard`), batas percobaan login 5x per login+IP lalu kunci 5 menit (`RateLimiter`, tes `LoginThrottleTest`)
 - [x] Tahap 2b: middleware `EnsureRole` + alias `role` di `bootstrap/app.php`
 - [x] Tahap 2c: **landing page publik** di `/` (lihat di bawah)
 - [x] Tahap 2d: layout navbar + sidebar, menu sesuai peran, dashboard kosong (`layouts.guest` + `layouts.app`, `errors/403`), desain ulang "Berkas Resmi" (lihat Sistem desain)
-- [ ] Tahap 3: manajemen pengguna (admin)
+- [x] Tahap 3: manajemen pengguna (`UserController` resource tanpa show/destroy + `users.toggle-active`, `StoreUserRequest`/`UpdateUserRequest`, tes `UserManagementTest`)
 - [ ] Tahap 4: CRUD kasus (Form Request, nomor otomatis `AK-2026-0001`, Policy, soft delete)
 - [ ] Tahap 5: barang bukti + SHA-256 + hash_checks
 - [ ] Tahap 6: pihak terkait, kronologi, ringkasan, dugaan motif
@@ -82,6 +82,9 @@ Gaya flat, tenang, rata kiri, nuansa map arsip instansi. Semua warna dan gaya ha
 - **Tabel**: bungkus dengan `.card` lalu `.table-responsive` > `table.table.table-app`, `<th scope="col">`. Data kosong: satu baris `<td colspan class="empty-state">` dengan ikon dan kalimat ajakan.
 - **Form**: label selalu terlihat (`.form-label`), jangan hanya placeholder. Error di bawah field (`.is-invalid` + `.invalid-feedback`, ditambah `aria-describedby`). Input dan tombol tinggi minimal 44px (sudah diatur CSS). Ikon depan pakai `.input-group-text`.
 - **Badge status kasus**: `<span class="badge-status badge-{{ $case->status }}">`. Kelasnya `badge-dalam_penanganan`, `badge-selesai`, `badge-ditutup`, `badge-ditangguhkan`. Latarnya lembut dengan titik di depan teks. Badge peran: `.badge.bg-brand`.
+- **Blade component** (`resources/views/components`): `<x-flash />` menampilkan `session('success'|'error')`. `<x-field name label type :value help />` adalah input + label + error + `old()`; atribut lain (required, maxlength, autocomplete) diteruskan ke input. Form panjang memakai ringkasan error di atas (`#error-summary`, lihat `users/_form`). Kartu form: `.card.form-card`.
+- **Konfirmasi aksi**: `<form data-confirm="...">` + script kecil `confirm()` lewat `@push('scripts')` (lihat `users/index`). Jangan menaruh teks dinamis di `onsubmit`.
+- **Badge akun**: `.badge-aktif`, `.badge-nonaktif`, peran `.bg-brand` (admin) / `.badge-role-petugas`.
 - **Keadaan kosong**: `.empty-state` dengan ikon `bi` dan kalimat yang menjelaskan langkah berikutnya.
 - **Layout**: halaman setelah login memakai `@extends('layouts.app')`, `@section('title')`, `@section('heading')` (judul navbar), dan `@section('page')`. Menu sidebar berupa `.nav-link` dengan ikon, grup `.nav-section` ("Utama", "Administrasi" khusus admin), menu aktif lewat `request()->routeIs()` + `aria-current="page"`.
 - **Chart.js**: muat lewat `@push('scripts')` di halaman yang memakainya (layout punya `@stack('scripts')`). Dashboard sudah punya `<canvas id="chartKasus" hidden>`; hapus `hidden` dan empty-state saat data ada. Warna grafik diambil dari variabel status.
