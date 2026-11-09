@@ -51,7 +51,7 @@
     <div class="col-md-6">
         <x-field name="password" label="Kata sandi" type="password" autocomplete="new-password" minlength="8"
                  :required="! $user->exists"
-                 :help="$user->exists ? 'Kosongkan jika tidak ingin mengganti. Minimal 8 karakter.' : 'Minimal 8 karakter.'" />
+                 :help="$user->exists ? 'Kosongkan jika tidak ingin mengganti. Minimal 8 karakter, ada huruf besar, huruf kecil, dan angka.' : 'Minimal 8 karakter, ada huruf besar, huruf kecil, dan angka.'" />
     </div>
     <div class="col-md-6">
         <x-field name="password_confirmation" label="Ulangi kata sandi" type="password" autocomplete="new-password"

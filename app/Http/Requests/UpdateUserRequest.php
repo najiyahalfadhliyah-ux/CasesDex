@@ -20,7 +20,7 @@ class UpdateUserRequest extends StoreUserRequest
             // Admin tidak boleh menurunkan perannya sendiri
             'role' => ['required', $isSelf ? 'in:admin' : 'in:admin,petugas'],
             // Kosongkan jika kata sandi tidak diganti
-            'password' => ['nullable', 'confirmed', Password::min(8)],
+            'password' => ['nullable', 'confirmed', Password::defaults()],
         ];
     }
 

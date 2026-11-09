@@ -1,7 +1,7 @@
 {{-- Dipakai otomatis oleh Laravel untuk setiap abort(403) --}}
 @extends('layouts.guest')
 
-@section('title', 'Akses Ditolak - Arsip Kasus')
+@section('title', 'Akses Ditolak - CasesDex')
 
 @section('content')
 <main class="min-vh-100 d-flex align-items-center justify-content-center p-3">

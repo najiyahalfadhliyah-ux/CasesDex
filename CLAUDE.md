@@ -1,4 +1,4 @@
-# Sistem Informasi Arsip Kasus dan Dokumentasi Barang Bukti (Laravel 13)
+# Sistem Informasi CasesDex dan Dokumentasi Barang Bukti (Laravel 13)
 
 Aplikasi web untuk mengarsipkan kasus, barang bukti fisik/digital, pihak terkait, kronologi, dengan cek integritas SHA-256 dan audit log. Proyek kuliah (RPL), memakai data fiktif saja.
 
@@ -53,7 +53,7 @@ Relasi: satu kasus punya banyak evidence/suspects/timeline_events. Satu evidence
 - [x] Tahap 2c: **landing page publik** di `/` (lihat di bawah)
 - [x] Tahap 2d: layout navbar + sidebar, menu sesuai peran, dashboard kosong (`layouts.guest` + `layouts.app`, `errors/403`), desain ulang "Berkas Resmi" (lihat Sistem desain)
 - [x] Tahap 3: manajemen pengguna (`UserController` resource tanpa show/destroy + `users.toggle-active`, `StoreUserRequest`/`UpdateUserRequest`, tes `UserManagementTest`)
-- [ ] Tahap 4: CRUD kasus (Form Request, nomor otomatis `AK-2026-0001`, Policy, soft delete)
+- [x] Tahap 4: CRUD kasus (`CaseController` resource, `CaseRecordPolicy` dengan `before()` admin + `assign`, `Store/UpdateCaseRequest`, `App\Services\CaseNumberGenerator` di dalam transaksi + retry, scope `CaseRecord::visibleTo($user)` untuk semua daftar/statistik, konstanta `CaseRecord::STATUSES`/`CATEGORIES`, `archive_deadline` otomatis = mulai investigasi + 6 bulan, tes `CaseManagementTest`)
 - [ ] Tahap 5: barang bukti + SHA-256 + hash_checks
 - [ ] Tahap 6: pihak terkait, kronologi, ringkasan, dugaan motif
 - [ ] Tahap 7: audit log
@@ -82,7 +82,7 @@ Gaya flat, tenang, rata kiri, nuansa map arsip instansi. Semua warna dan gaya ha
 - **Tabel**: bungkus dengan `.card` lalu `.table-responsive` > `table.table.table-app`, `<th scope="col">`. Data kosong: satu baris `<td colspan class="empty-state">` dengan ikon dan kalimat ajakan.
 - **Form**: label selalu terlihat (`.form-label`), jangan hanya placeholder. Error di bawah field (`.is-invalid` + `.invalid-feedback`, ditambah `aria-describedby`). Input dan tombol tinggi minimal 44px (sudah diatur CSS). Ikon depan pakai `.input-group-text`.
 - **Badge status kasus**: `<span class="badge-status badge-{{ $case->status }}">`. Kelasnya `badge-dalam_penanganan`, `badge-selesai`, `badge-ditutup`, `badge-ditangguhkan`. Latarnya lembut dengan titik di depan teks. Badge peran: `.badge.bg-brand`.
-- **Blade component** (`resources/views/components`): `<x-flash />` menampilkan `session('success'|'error')`. `<x-field name label type :value help />` adalah input + label + error + `old()`; atribut lain (required, maxlength, autocomplete) diteruskan ke input. Form panjang memakai ringkasan error di atas (`#error-summary`, lihat `users/_form`). Kartu form: `.card.form-card`.
+- **Blade component** (`resources/views/components`): `<x-flash />` menampilkan `session('success'|'error')`. `<x-field name label type :value help />` adalah input + label + error + `old()`; atribut lain (required, maxlength, autocomplete) diteruskan ke input. Nilai tanggal: `->format('Y-m-d')`. `<x-select name label :options value placeholder help />` (options = nilai => label). `<x-textarea name label value help rows />`. `<x-status-badge :status="$case->status" />`. Detail label-nilai: `<dl class="detail-list">`; teks panjang: `.text-pre-line`. Form panjang memakai ringkasan error di atas (`#error-summary`, lihat `users/_form`). Kartu form: `.card.form-card`.
 - **Konfirmasi aksi**: `<form data-confirm="...">` + script kecil `confirm()` lewat `@push('scripts')` (lihat `users/index`). Jangan menaruh teks dinamis di `onsubmit`.
 - **Badge akun**: `.badge-aktif`, `.badge-nonaktif`, peran `.bg-brand` (admin) / `.badge-role-petugas`.
 - **Keadaan kosong**: `.empty-state` dengan ikon `bi` dan kalimat yang menjelaskan langkah berikutnya.

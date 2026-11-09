@@ -36,14 +36,14 @@ class UserManagementTest extends TestCase
             'email' => 'baru@arsip.test',
             'username' => 'petugas_baru',
             'role' => 'petugas',
-            'password' => 'rahasia123',
-            'password_confirmation' => 'rahasia123',
+            'password' => 'Rahasia123',
+            'password_confirmation' => 'Rahasia123',
         ])->assertRedirect('/users')->assertSessionHas('success');
 
         $user = User::where('username', 'petugas_baru')->first();
         $this->assertTrue($user->is_active);
-        $this->assertNotSame('rahasia123', $user->password);
-        $this->assertTrue(Hash::check('rahasia123', $user->password));
+        $this->assertNotSame('Rahasia123', $user->password);
+        $this->assertTrue(Hash::check('Rahasia123', $user->password));
     }
 
     public function test_validasi_gagal_mempertahankan_input_lama(): void

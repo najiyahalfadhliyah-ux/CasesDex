@@ -4,7 +4,7 @@
 <header class="hero">
     <nav class="container d-flex align-items-center justify-content-between py-3">
         <span class="fw-bold d-flex align-items-center gap-2">
-            <i class="bi bi-archive-fill" style="color:#FCD34D" aria-hidden="true"></i> Arsip Kasus
+            <i class="bi bi-archive-fill" style="color:#FCD34D" aria-hidden="true"></i> CasesDex
         </span>
         <a href="{{ route('login') }}" class="btn btn-outline-light btn-sm px-3">Masuk</a>
     </nav>
@@ -12,7 +12,7 @@
     <div class="container py-5">
         <div class="row align-items-center g-5 py-lg-4">
             <div class="col-lg-7">
-                <h1 class="mb-4">Arsip kasus dan barang bukti dalam satu tempat</h1>
+                <h1 class="mb-4">CasesDex dan barang bukti dalam satu tempat</h1>
                 <p class="lead mb-4">Catat kasus, dokumentasikan bukti fisik dan digital, lalu pastikan berkasnya tidak berubah dengan cek SHA-256. Setiap perubahan tercatat.</p>
                 <a href="{{ route('login') }}" class="btn btn-accent btn-lg px-4">
                     <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Masuk ke sistem
@@ -41,7 +41,7 @@
         <div class="col-sm-6 col-lg-3">
             <div class="card h-100 p-4">
                 <div class="feature-icon mb-3"><i class="bi bi-folder2-open" aria-hidden="true"></i></div>
-                <h3 class="h6 fw-semibold">Arsip kasus</h3>
+                <h3 class="h6 fw-semibold">CasesDex</h3>
                 <p class="text-muted mb-0">Nomor kasus dibuat otomatis, status penanganan selalu terlihat.</p>
             </div>
         </div>
@@ -70,6 +70,6 @@
 </main>
 
 <footer class="border-top py-4 text-center text-muted small">
-    &copy; {{ date('Y') }} Arsip Kasus. Proyek RPL dengan data fiktif.
+    &copy; {{ date('Y') }} CasesDex. Proyek RPL dengan data fiktif.
 </footer>
 @endsection

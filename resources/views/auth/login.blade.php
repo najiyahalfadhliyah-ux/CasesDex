@@ -1,16 +1,16 @@
 @extends('layouts.guest')
 
-@section('title', 'Login - Arsip Kasus')
+@section('title', 'Login - CasesDex')
 
 @section('content')
 <div class="row g-0 min-vh-100">
     {{-- Panel kiri hanya tampil di laptop --}}
     <aside class="col-lg-5 auth-panel d-none d-lg-flex flex-column justify-content-between p-5">
         <a href="{{ route('home') }}" class="text-white text-decoration-none fw-bold d-flex align-items-center gap-2">
-            <i class="bi bi-archive-fill" style="color:#FCD34D" aria-hidden="true"></i> Arsip Kasus
+            <i class="bi bi-archive-fill" style="color:#FCD34D" aria-hidden="true"></i> Casesdex
         </a>
         <div>
-            <h2 class="h3 fw-bold mb-3">Sistem Informasi Arsip Kasus dan Dokumentasi Barang Bukti</h2>
+            <h2 class="h3 fw-bold mb-3">Sistem Informasi CasesDex dan Dokumentasi Barang Bukti</h2>
             <p class="mb-0">Akses hanya untuk admin dan petugas yang terdaftar.</p>
         </div>
         <small>Memuat semua data Kasus yang kamu cari.</small>

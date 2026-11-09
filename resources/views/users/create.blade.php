@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Tambah Pengguna - Arsip Kasus')
+@section('title', 'Tambah Pengguna - CasesDex')
 @section('heading', 'Manajemen Pengguna')
 
 @section('page')

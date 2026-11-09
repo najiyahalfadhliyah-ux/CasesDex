@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Model;
@@ -9,9 +11,26 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class CaseRecord extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $table = 'cases';
+
+    // Nilai kolom status => label tampilan
+    public const STATUSES = [
+        'dalam_penanganan' => 'Dalam penanganan',
+        'selesai' => 'Selesai',
+        'ditutup' => 'Ditutup',
+        'ditangguhkan' => 'Ditangguhkan',
+    ];
+
+    public const CATEGORIES = ['Pencurian', 'Penipuan', 'Kejahatan Siber', 'Perusakan', 'Lainnya'];
+
+    // Kasus yang boleh dilihat user: admin semua, petugas hanya yang ditugaskan.
+    // Dipakai juga nanti untuk dashboard, pencarian, dan statistik.
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        return $user->role === 'admin' ? $query : $query->where('assigned_to', $user->id);
+    }
 
     protected $fillable = [
         'case_number', 'title', 'category', 'incident_date', 'recorded_date',
@@ -26,6 +45,7 @@ class CaseRecord extends Model
     'investigation_start_date' => 'date',
     'completed_date' => 'date',
     'archive_deadline' => 'date',
+    'assigned_to' => 'integer', // dibandingkan dengan === di CaseRecordPolicy
     ];
 
     public function evidence(): HasMany

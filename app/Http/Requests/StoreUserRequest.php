@@ -20,7 +20,7 @@ class StoreUserRequest extends FormRequest
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'username' => ['required', 'alpha_dash', 'max:50', 'unique:users,username'],
             'role' => ['required', 'in:admin,petugas'],
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'password' => ['required', 'confirmed', Password::defaults()],
         ];
     }
 
@@ -36,6 +36,8 @@ class StoreUserRequest extends FormRequest
             'in' => ':attribute tidak valid.',
             'confirmed' => 'Konfirmasi :attribute tidak cocok.',
             'password.min' => ':attribute minimal :min karakter.',
+            'password.mixed' => ':attribute harus berisi huruf besar dan huruf kecil.',
+            'password.numbers' => ':attribute harus berisi minimal satu angka.',
         ];
     }
 

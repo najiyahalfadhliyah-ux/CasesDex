@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CaseController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +18,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
     Route::get('/dashboard', fn () => view('dashboard'))->name('dashboard');
+
+    // Kasus: hak akses admin/petugas diatur CaseRecordPolicy, bukan middleware role
+    Route::resource('cases', CaseController::class);
+    Route::patch('/cases/{case}/status', [CaseController::class, 'updateStatus'])->name('cases.status');
+
+    // Pengaturan akun sendiri (semua peran)
+    Route::get('/account', [AccountController::class, 'edit'])->name('account.edit');
+    Route::put('/account', [AccountController::class, 'update'])->name('account.update');
 
     // Khusus Admin
     Route::middleware('role:admin')->group(function () {

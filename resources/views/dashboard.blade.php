@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard - Arsip Kasus')
+@section('title', 'Dashboard - CasesDex')
 @section('heading', 'Dashboard')
 
 @section('page')

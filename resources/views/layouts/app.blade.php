@@ -9,7 +9,7 @@
     <aside class="offcanvas-lg offcanvas-start sidebar d-flex flex-column" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel">
         <div class="offcanvas-header px-4 py-3">
             <a href="{{ route('dashboard') }}" class="brand fs-5" id="sidebarLabel">
-                <i class="bi bi-archive-fill" aria-hidden="true"></i> Arsip Kasus
+                <i class="bi bi-archive-fill" aria-hidden="true"></i> CasesDex
             </a>
             <button type="button" class="btn-close btn-close-white d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Tutup menu"></button>
         </div>
@@ -22,7 +22,14 @@
                     <i class="bi bi-grid-1x2" aria-hidden="true"></i> Dashboard
                 </a>
                 {{-- Link # diganti saat route-nya dibuat (tahap 3, 4, 7) --}}
-                <a class="nav-link" href="#"><i class="bi bi-folder2-open" aria-hidden="true"></i> Kasus</a>
+                <a class="nav-link {{ request()->routeIs('cases.*') ? 'active' : '' }}" href="{{ route('cases.index') }}"
+                   @if (request()->routeIs('cases.*')) aria-current="page" @endif>
+                    <i class="bi bi-folder2-open" aria-hidden="true"></i> Kasus
+                </a>
+                <a class="nav-link {{ request()->routeIs('account.*') ? 'active' : '' }}" href="{{ route('account.edit') }}"
+                   @if (request()->routeIs('account.*')) aria-current="page" @endif>
+                    <i class="bi bi-person-gear" aria-hidden="true"></i> Pengaturan Akun
+                </a>
 
                 @if (auth()->user()->role === 'admin')
                     <div class="nav-section">Administrasi</div>
