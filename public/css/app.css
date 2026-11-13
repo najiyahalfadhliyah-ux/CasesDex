@@ -241,3 +241,23 @@ h1, h2, h3, .h1, .h2, .h3 { color: var(--primary-dark); letter-spacing: -.01em; 
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition: none !important; animation: none !important; }
 }
+
+/* ===== Barang bukti ===== */
+.hash-value { font-family: var(--font-mono); font-size: .8125rem; word-break: break-all; }
+
+/* Hasil cek integritas: warna + ikon + teks, tidak bergantung warna saja */
+.hash-result {
+    display: flex; gap: .85rem; align-items: flex-start;
+    padding: 1rem 1.1rem; border-radius: var(--radius); border: 1px solid;
+}
+.hash-result > div { min-width: 0; } /* agar hash panjang bisa dipatah */
+.hash-result-icon { font-size: 1.6rem; line-height: 1; }
+.hash-result-title { font-weight: 700; font-size: 1.05rem; margin-bottom: .25rem; }
+.hash-match    { background: var(--status-selesai-bg); color: var(--status-selesai); border-color: currentColor; }
+.hash-mismatch { background: var(--status-ditangguhkan-bg); color: var(--status-ditangguhkan); border-color: currentColor; }
+.hash-compare { margin: 0 0 .5rem; }
+.hash-compare dt { font-weight: 500; font-size: .8125rem; }
+.hash-compare dd { margin: 0 0 .4rem; }
+
+.badge-cocok       { background: var(--status-selesai-bg); color: var(--status-selesai); }
+.badge-tidak-cocok { background: var(--status-ditangguhkan-bg); color: var(--status-ditangguhkan); }

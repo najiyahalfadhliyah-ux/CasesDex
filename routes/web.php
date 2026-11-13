@@ -3,6 +3,7 @@
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CaseController;
+use App\Http\Controllers\EvidenceController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -22,6 +23,12 @@ Route::middleware('auth')->group(function () {
     // Kasus: hak akses admin/petugas diatur CaseRecordPolicy, bukan middleware role
     Route::resource('cases', CaseController::class);
     Route::patch('/cases/{case}/status', [CaseController::class, 'updateStatus'])->name('cases.status');
+
+    // Barang bukti: tambah di bawah kasus, sisanya langsung /evidence/{id}. Hak akses lewat EvidencePolicy.
+    Route::resource('cases.evidence', EvidenceController::class)->shallow()->only(['create', 'store', 'show', 'edit', 'update']);
+    Route::get('/evidence/{evidence}/download', [EvidenceController::class, 'download'])->name('evidence.download');
+    Route::post('/evidence/{evidence}/hash-check', [EvidenceController::class, 'checkHash'])->name('evidence.hash-check');
+    Route::patch('/evidence/{evidence}/toggle-active', [EvidenceController::class, 'toggleActive'])->name('evidence.toggle-active');
 
     // Pengaturan akun sendiri (semua peran)
     Route::get('/account', [AccountController::class, 'edit'])->name('account.edit');

@@ -34,7 +34,7 @@ class CaseController extends Controller
     {
         Gate::authorize('view', $case);
 
-        $case->load('officer', 'creator');
+        $case->load(['officer', 'creator', 'evidence' => fn ($q) => $q->latest()]);
 
         return view('cases.show', compact('case'));
     }

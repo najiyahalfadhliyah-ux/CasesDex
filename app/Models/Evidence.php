@@ -10,11 +10,27 @@ class Evidence extends Model
 {
     protected $table = 'evidence';
 
+    public const TYPES = ['fisik' => 'Fisik', 'digital' => 'Digital'];
+
     protected $fillable = [
-        'case_id', 'type', 'name', 'description', 'photo_path',
+        'case_id', 'type', 'recorded_date', 'name', 'description', 'notes', 'photo_path',
         'storage_location', 'file_path', 'original_name', 'format',
-        'size', 'sha256_hash', 'uploaded_by',
+        'size', 'sha256_hash', 'is_active', 'uploaded_by',
     ];
+
+    protected $casts = [
+        'recorded_date' => 'date',
+        'size' => 'integer',
+        'is_active' => 'boolean',
+    ];
+
+    // Ukuran berkas mudah dibaca. Tidak pakai Number::fileSize karena butuh ekstensi PHP intl.
+    public function sizeLabel(): string
+    {
+        return $this->size >= 1048576
+            ? number_format($this->size / 1048576, 1, ',', '.').' MB'
+            : number_format($this->size / 1024, 1, ',', '.').' KB';
+    }
 
     public function case(): BelongsTo
     {
@@ -28,6 +44,6 @@ class Evidence extends Model
 
     public function hashChecks(): HasMany
     {
-        return $this->hasMany(HashCheck::class);
+        return $this->hasMany(HashCheck::class)->latest('checked_at')->latest('id');
     }
 }

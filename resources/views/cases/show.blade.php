@@ -95,6 +95,69 @@
             </section>
         </div>
     </div>
+
+    <section class="card mt-3" aria-labelledby="judul-bukti">
+        <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <h2 class="card-title" id="judul-bukti">Barang bukti ({{ $case->evidence->count() }})</h2>
+            @can('update', $case)
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ route('cases.evidence.create', [$case, 'type' => 'fisik']) }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-box-seam" aria-hidden="true"></i> Tambah bukti fisik
+                    </a>
+                    <a href="{{ route('cases.evidence.create', [$case, 'type' => 'digital']) }}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-upload" aria-hidden="true"></i> Unggah bukti digital
+                    </a>
+                </div>
+            @endcan
+        </div>
+        <div class="table-responsive">
+            <table class="table table-app mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Nama bukti</th>
+                        <th scope="col">Jenis</th>
+                        <th scope="col">Tanggal pencatatan</th>
+                        <th scope="col">Metadata</th>
+                        <th scope="col">Status</th>
+                        <th scope="col"><span class="visually-hidden">Aksi</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($case->evidence as $item)
+                        <tr>
+                            <td class="fw-medium text-break">{{ $item->name }}</td>
+                            <td>{{ App\Models\Evidence::TYPES[$item->type] ?? $item->type }}</td>
+                            <td class="text-nowrap">{{ $item->recorded_date?->format('d/m/Y') ?? '-' }}</td>
+                            <td class="small">
+                                @if ($item->type === 'digital')
+                                    {{ $item->format }} &middot; {{ $item->sizeLabel() }}<br>
+                                    <span class="hash-value text-muted" title="{{ $item->sha256_hash }}">SHA-256 {{ Str::limit($item->sha256_hash, 16, '…') }}</span>
+                                @else
+                                    {{ $item->storage_location ?? '-' }}
+                                    @if ($item->photo_path) <br><span class="text-muted"><i class="bi bi-image" aria-hidden="true"></i> Ada foto</span> @endif
+                                @endif
+                            </td>
+                            <td>
+                                <span class="badge-status {{ $item->is_active ? 'badge-aktif' : 'badge-nonaktif' }}">{{ $item->is_active ? 'Aktif' : 'Nonaktif' }}</span>
+                            </td>
+                            <td class="text-end">
+                                <a href="{{ route('evidence.show', $item) }}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="bi bi-eye" aria-hidden="true"></i> Detail
+                                </a>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="empty-state">
+                                <i class="bi bi-box-seam" aria-hidden="true"></i>
+                                Belum ada barang bukti. Tambahkan bukti fisik atau unggah bukti digital dengan tombol di atas.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </section>
 @endsection
 
 @push('scripts')
