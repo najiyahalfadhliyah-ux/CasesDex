@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Evidence extends Model
 {
@@ -45,5 +46,17 @@ class Evidence extends Model
     public function hashChecks(): HasMany
     {
         return $this->hasMany(HashCheck::class)->latest('checked_at')->latest('id');
+    }
+
+    public function latestReupload(): HasOne
+    {
+        return $this->hasOne(HashCheck::class)->ofMany(['id' => 'max'], fn ($q) => $q->where('action', 'unggah_ulang'));
+    }
+
+    // Berkas yang sedang berlaku: unggahan ulang terakhir, atau berkas asli.
+    // Kolom file_path/original_name/sha256_hash di tabel evidence tetap milik unggahan pertama (acuan).
+    public function currentFilePath(): ?string
+    {
+        return $this->latestReupload?->file_path ?? $this->file_path;
     }
 }

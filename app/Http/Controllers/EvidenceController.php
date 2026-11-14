@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ReuploadEvidenceRequest;
 use App\Http\Requests\StoreEvidenceRequest;
 use App\Http\Requests\UpdateEvidenceRequest;
 use App\Models\CaseRecord;
 use App\Models\Evidence;
+use App\Models\HashCheck;
 use App\Services\EvidenceIntegrity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -58,7 +60,7 @@ class EvidenceController extends Controller
     {
         Gate::authorize('view', $evidence);
 
-        $evidence->load('case', 'uploader', 'hashChecks.checker');
+        $evidence->load('case', 'uploader', 'hashChecks.checker', 'latestReupload');
 
         return view('evidence.show', compact('evidence'));
     }
@@ -84,19 +86,33 @@ class EvidenceController extends Controller
         return redirect()->route('evidence.show', $evidence)->with('success', "Bukti \"{$evidence->name}\" berhasil diperbarui.");
     }
 
-    // Unduh berkas digital atau foto bukti fisik, hanya lewat sini (dicek Policy)
-    public function download(Evidence $evidence): StreamedResponse
+    // Unduh berkas asli, versi unggah ulang ($hashCheck), atau foto bukti fisik.
+    // Link wajib bertanda tangan + belum kedaluwarsa (middleware signed), lalu tetap dicek Policy.
+    public function download(Evidence $evidence, ?HashCheck $hashCheck = null): StreamedResponse
     {
         Gate::authorize('view', $evidence);
 
-        $path = $evidence->type === 'digital' ? $evidence->file_path : $evidence->photo_path;
+        if ($hashCheck) {
+            abort_unless($hashCheck->action === 'unggah_ulang', 404);
+            [$path, $name] = [$hashCheck->file_path, $hashCheck->original_name];
+        } elseif ($evidence->type === 'digital') {
+            [$path, $name] = [$evidence->file_path, $evidence->original_name];
+        } else {
+            $path = $evidence->photo_path;
+            $name = "foto-bukti-{$evidence->id}.".pathinfo((string) $path, PATHINFO_EXTENSION);
+        }
+
         abort_unless($path && Storage::disk('local')->exists($path), 404);
 
-        $name = $evidence->type === 'digital'
-            ? $evidence->original_name
-            : "foto-bukti-{$evidence->id}.".pathinfo($path, PATHINFO_EXTENSION);
-
         return Storage::disk('local')->download($path, $name);
+    }
+
+    public function reupload(ReuploadEvidenceRequest $request, Evidence $evidence, EvidenceIntegrity $integrity): RedirectResponse
+    {
+        $integrity->reupload($evidence, $request->file('file'), $request->user());
+
+        // Hasil pembandingan dengan hash asli langsung tampil di halaman detail
+        return redirect()->route('evidence.show', $evidence);
     }
 
     public function checkHash(Request $request, Evidence $evidence, EvidenceIntegrity $integrity): RedirectResponse

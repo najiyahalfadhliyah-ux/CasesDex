@@ -26,7 +26,10 @@ Route::middleware('auth')->group(function () {
 
     // Barang bukti: tambah di bawah kasus, sisanya langsung /evidence/{id}. Hak akses lewat EvidencePolicy.
     Route::resource('cases.evidence', EvidenceController::class)->shallow()->only(['create', 'store', 'show', 'edit', 'update']);
-    Route::get('/evidence/{evidence}/download', [EvidenceController::class, 'download'])->name('evidence.download');
+    // Unduh hanya lewat signed URL yang kedaluwarsa; {hashCheck} = versi unggah ulang, wajib milik bukti ini (scopeBindings)
+    Route::get('/evidence/{evidence}/download/{hashCheck?}', [EvidenceController::class, 'download'])
+        ->middleware('signed')->scopeBindings()->name('evidence.download');
+    Route::post('/evidence/{evidence}/reupload', [EvidenceController::class, 'reupload'])->name('evidence.reupload');
     Route::post('/evidence/{evidence}/hash-check', [EvidenceController::class, 'checkHash'])->name('evidence.hash-check');
     Route::patch('/evidence/{evidence}/toggle-active', [EvidenceController::class, 'toggleActive'])->name('evidence.toggle-active');
 

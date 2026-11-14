@@ -4,8 +4,8 @@
 @section('heading', 'Barang bukti')
 
 @section('page')
-    <a href="{{ route('evidence.show', $evidence) }}" class="d-inline-flex align-items-center gap-1 text-decoration-none small mb-3">
-        <i class="bi bi-arrow-left" aria-hidden="true"></i> Detail bukti
+    <a href="{{ route('cases.show', $case) }}" class="d-inline-flex align-items-center gap-1 text-decoration-none small mb-3">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i> Kembali ke kasus
     </a>
 
     <section class="card form-card">
@@ -26,7 +26,7 @@
                     <button type="submit" class="btn btn-primary">
                         <i class="bi bi-check2" aria-hidden="true"></i> Simpan perubahan
                     </button>
-                    <a href="{{ route('evidence.show', $evidence) }}" class="btn btn-outline-secondary">Batal</a>
+                    <a href="{{ route('cases.show', $case) }}" class="btn btn-outline-secondary">Batal</a>
                 </div>
             </form>
         </div>

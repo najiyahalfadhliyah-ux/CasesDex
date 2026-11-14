@@ -6,6 +6,8 @@
 @section('page')
     @php($case = $evidence->case)
     @php($latestCheck = $evidence->hashChecks->first())
+    {{-- Link unduh bertanda tangan, berlaku 30 menit. Setelah itu muat ulang halaman untuk link baru. --}}
+    @php($downloadUrl = fn ($version = null) => URL::temporarySignedRoute('evidence.download', now()->addMinutes(30), array_filter([$evidence, $version])))
 
     <a href="{{ route('cases.show', $case) }}" class="d-inline-flex align-items-center gap-1 text-decoration-none small mb-3">
         <i class="bi bi-arrow-left" aria-hidden="true"></i> Kasus {{ $case->case_number }}
@@ -26,8 +28,8 @@
         </div>
         <div class="d-flex flex-wrap gap-2">
             @if ($evidence->file_path || $evidence->photo_path)
-                <a href="{{ route('evidence.download', $evidence) }}" class="btn btn-outline-secondary">
-                    <i class="bi bi-download" aria-hidden="true"></i> {{ $evidence->type === 'digital' ? 'Unduh berkas' : 'Unduh foto' }}
+                <a href="{{ $downloadUrl() }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-download" aria-hidden="true"></i> {{ $evidence->type === 'digital' ? 'Unduh berkas asli' : 'Unduh foto' }}
                 </a>
             @endif
             @can('update', $evidence)
@@ -72,7 +74,11 @@
                             <dt>Format</dt><dd>{{ $evidence->format }}</dd>
                             <dt>Ukuran</dt><dd>{{ $evidence->sizeLabel() }}</dd>
                             <dt>Tanggal unggah</dt><dd>{{ $evidence->created_at->format('d/m/Y H:i') }}</dd>
-                            <dt>Hash SHA-256 saat diunggah</dt><dd class="hash-value">{{ $evidence->sha256_hash }}</dd>
+                            <dt>Hash SHA-256 asli (pembanding)</dt><dd class="hash-value">{{ $evidence->sha256_hash }}</dd>
+                            @if ($evidence->latestReupload)
+                                <dt>Berkas saat ini</dt>
+                                <dd class="text-break">{{ $evidence->latestReupload->original_name }} (unggah ulang {{ $evidence->latestReupload->checked_at->format('d/m/Y H:i') }})</dd>
+                            @endif
                         @endif
                         <dt>Keterangan</dt><dd class="text-pre-line">{{ $evidence->notes ?: '-' }}</dd>
                         <dt>Dicatat oleh</dt><dd>{{ $evidence->uploader?->name ?? '-' }}</dd>
@@ -102,6 +108,17 @@
                                     <i class="bi bi-shield-check" aria-hidden="true"></i> Periksa integritas sekarang
                                 </button>
                             </form>
+
+                            <hr class="my-3">
+                            <form action="{{ route('evidence.reupload', $evidence) }}" method="POST" enctype="multipart/form-data" novalidate
+                                  data-uploading="Mengunggah dan membandingkan hash...">
+                                @csrf
+                                <x-field name="file" label="Unggah ulang berkas" type="file" required accept=".pdf,.jpg,.jpeg,.png,.log,.txt,.pcap"
+                                         help="Hash berkas baru dibandingkan dengan hash asli. Berkas lama tetap disimpan." />
+                                <button type="submit" class="btn btn-outline-secondary">
+                                    <i class="bi bi-upload" aria-hidden="true"></i> Unggah ulang berkas
+                                </button>
+                            </form>
                         @endcan
                     </div>
                 </section>
@@ -115,15 +132,27 @@
                             <thead>
                                 <tr>
                                     <th scope="col">Waktu</th>
-                                    <th scope="col">Pemeriksa</th>
+                                    <th scope="col">Kegiatan</th>
+                                    <th scope="col">Oleh</th>
                                     <th scope="col">Hasil</th>
-                                    <th scope="col">Hash saat diperiksa</th>
+                                    <th scope="col">Hash saat itu</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($evidence->hashChecks as $check)
                                     <tr>
                                         <td class="text-nowrap">{{ $check->checked_at->format('d/m/Y H:i') }}</td>
+                                        <td>
+                                            @if ($check->action === 'unggah_ulang')
+                                                Unggah ulang<br>
+                                                <span class="small text-break">{{ $check->original_name }}</span>
+                                                <a href="{{ $downloadUrl($check) }}" class="small d-inline-flex align-items-center gap-1">
+                                                    <i class="bi bi-download" aria-hidden="true"></i> Unduh
+                                                </a>
+                                            @else
+                                                Pemeriksaan
+                                            @endif
+                                        </td>
                                         <td>{{ $check->checker?->name ?? '-' }}</td>
                                         <td>
                                             <span class="badge-status {{ $check->is_match ? 'badge-cocok' : 'badge-tidak-cocok' }}">
@@ -134,7 +163,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="empty-state">
+                                        <td colspan="5" class="empty-state">
                                             <i class="bi bi-clock-history" aria-hidden="true"></i>
                                             Belum ada riwayat. Jalankan pemeriksaan integritas untuk mencatat yang pertama.
                                         </td>

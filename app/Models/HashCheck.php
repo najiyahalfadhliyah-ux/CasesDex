@@ -10,7 +10,7 @@ class HashCheck extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'evidence_id', 'checked_by', 'computed_hash',
+        'evidence_id', 'checked_by', 'action', 'file_path', 'original_name', 'size', 'computed_hash',
         'stored_hash', 'is_match', 'checked_at',
     ];
 

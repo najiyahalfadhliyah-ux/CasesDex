@@ -5,6 +5,9 @@
     <i class="bi {{ $check->is_match ? 'bi-shield-check' : 'bi-shield-exclamation' }} hash-result-icon" aria-hidden="true"></i>
     <div class="flex-grow-1">
         <p class="hash-result-title">{{ $check->is_match ? 'Cocok' : 'Tidak cocok' }}</p>
+        @if ($check->action === 'unggah_ulang')
+            <p class="mb-1 text-break">Unggah ulang: {{ $check->original_name }}</p>
+        @endif
         @if ($check->is_match)
             <p class="mb-2">Hash berkas saat ini sama dengan hash saat diunggah. Isi berkas tidak berubah.</p>
         @elseif ($check->computed_hash === '')

@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 class EvidenceTest extends TestCase
@@ -86,13 +87,79 @@ class EvidenceTest extends TestCase
         $evidence = Evidence::sole();
         $petugasLain = User::factory()->create();
 
-        $this->actingAs($petugasLain)->get("/evidence/{$evidence->id}/download")->assertForbidden();
+        // Signed URL yang sah tetap ditolak untuk petugas kasus lain (Policy tetap dicek)
+        $this->actingAs($petugasLain)->get($this->downloadUrl($evidence))->assertForbidden();
         $this->actingAs($petugasLain)->get("/evidence/{$evidence->id}")->assertForbidden();
         $this->actingAs($petugasLain)->post("/evidence/{$evidence->id}/hash-check")->assertForbidden();
+        $this->actingAs($petugasLain)->post("/evidence/{$evidence->id}/reupload", ['file' => $this->realFile('lain.txt', 'x')])->assertForbidden();
         $this->uploadDigital($petugasLain, $this->realFile('lain.txt', 'x'))->assertForbidden();
 
-        $this->actingAs($this->petugas)->get("/evidence/{$evidence->id}/download")->assertOk()->assertDownload('catatan.txt');
-        $this->actingAs($this->admin)->get("/evidence/{$evidence->id}/download")->assertOk();
+        $this->actingAs($this->petugas)->get($this->downloadUrl($evidence))->assertOk()->assertDownload('catatan.txt');
+        $this->actingAs($this->admin)->get($this->downloadUrl($evidence))->assertOk();
+    }
+
+    private function downloadUrl(Evidence $evidence, $version = null): string
+    {
+        return URL::temporarySignedRoute('evidence.download', now()->addMinutes(30), array_filter([$evidence, $version]));
+    }
+
+    public function test_link_unduh_tanpa_tanda_tangan_diubah_atau_kedaluwarsa_ditolak(): void
+    {
+        $this->uploadDigital($this->petugas, $this->realFile('catatan.txt', 'isi'));
+        $evidence = Evidence::sole();
+        $url = $this->downloadUrl($evidence);
+
+        $this->actingAs($this->petugas)->get("/evidence/{$evidence->id}/download")->assertForbidden();
+        $this->actingAs($this->petugas)->get($url.'x')->assertForbidden();
+        $this->actingAs($this->petugas)->get("/evidence/{$evidence->id}")->assertDontSee($evidence->file_path);
+
+        $this->travel(31)->minutes();
+        $this->actingAs($this->petugas)->get($url)->assertForbidden();
+    }
+
+    public function test_unggah_ulang_isi_berbeda_tidak_cocok_dan_hash_asli_tidak_tertimpa(): void
+    {
+        $this->uploadDigital($this->petugas, $this->realFile('catatan.txt', 'isi asli'));
+        $evidence = Evidence::sole();
+        $originalPath = $evidence->file_path;
+
+        // Isi sama: cocok
+        $this->actingAs($this->petugas)->post("/evidence/{$evidence->id}/reupload", ['file' => $this->realFile('salinan.txt', 'isi asli')])
+            ->assertRedirect("/evidence/{$evidence->id}");
+        $this->assertDatabaseHas('hash_checks', ['action' => 'unggah_ulang', 'original_name' => 'salinan.txt', 'is_match' => true]);
+
+        // Isi berbeda: tidak cocok
+        $this->actingAs($this->petugas)->post("/evidence/{$evidence->id}/reupload", ['file' => $this->realFile('diubah.txt', 'isi palsu')]);
+        $reupload = $evidence->hashChecks()->where('original_name', 'diubah.txt')->sole();
+        $this->assertFalse($reupload->is_match);
+        $this->assertSame(hash('sha256', 'isi palsu'), $reupload->computed_hash);
+        $this->assertSame(hash('sha256', 'isi asli'), $reupload->stored_hash);
+
+        // Hash dan berkas asli tetap; berkas lama tidak dihapus
+        $evidence->refresh();
+        $this->assertSame(hash('sha256', 'isi asli'), $evidence->sha256_hash);
+        $this->assertSame($originalPath, $evidence->file_path);
+        Storage::disk('local')->assertExists([$originalPath, $reupload->file_path]);
+
+        // Pemeriksaan berikutnya memeriksa berkas terbaru, tetap tidak cocok
+        $this->actingAs($this->admin)->post("/evidence/{$evidence->id}/hash-check");
+        $this->assertFalse($evidence->hashChecks()->first()->is_match);
+        $this->assertSame('periksa', $evidence->hashChecks()->first()->action);
+
+        // Setiap versi bisa diunduh dengan nama aslinya
+        $this->actingAs($this->petugas)->get($this->downloadUrl($evidence, $reupload))->assertOk()->assertDownload('diubah.txt');
+        $this->actingAs($this->petugas)->get($this->downloadUrl($evidence))->assertDownload('catatan.txt');
+        $this->actingAs($this->petugas)->get("/evidence/{$evidence->id}")->assertOk()->assertSee('Tidak cocok')->assertSee('diubah.txt');
+    }
+
+    public function test_unggah_ulang_tipe_terlarang_ditolak(): void
+    {
+        $this->uploadDigital($this->petugas, $this->realFile('catatan.txt', 'isi'));
+        $evidence = Evidence::sole();
+
+        $this->actingAs($this->petugas)->post("/evidence/{$evidence->id}/reupload", ['file' => $this->realFile('catatan.txt', '<?php echo 1; ?>')])
+            ->assertSessionHasErrors('file');
+        $this->assertDatabaseCount('hash_checks', 0);
     }
 
     public function test_tipe_berkas_terlarang_ditolak_termasuk_yang_menyamar(): void
