@@ -55,7 +55,7 @@ Relasi: satu kasus punya banyak evidence/suspects/timeline_events. Satu evidence
 - [x] Tahap 3: manajemen pengguna (`UserController` resource tanpa show/destroy + `users.toggle-active`, `StoreUserRequest`/`UpdateUserRequest`, tes `UserManagementTest`)
 - [x] Tahap 4: CRUD kasus (`CaseController` resource, `CaseRecordPolicy` dengan `before()` admin + `assign`, `Store/UpdateCaseRequest`, `App\Services\CaseNumberGenerator` di dalam transaksi + retry, scope `CaseRecord::visibleTo($user)` untuk semua daftar/statistik, konstanta `CaseRecord::STATUSES`/`CATEGORIES`, `archive_deadline` otomatis = mulai investigasi + 6 bulan, tes `CaseManagementTest`)
 - [x] Tahap 5: barang bukti + SHA-256 + hash_checks (`EvidenceController` shallow di bawah `cases`, `EvidencePolicy` mengikuti kasus + nonaktif khusus admin, `App\Services\EvidenceIntegrity`, `config/evidence.php` + `EVIDENCE_MAX_KB`, kolom baru `recorded_date`/`notes`/`is_active`, komponen `<x-hash-result>`, tes `EvidenceTest`)
-- [ ] Tahap 6: pihak terkait, kronologi, ringkasan, dugaan motif
+- [x] Tahap 6: pihak terkait, kronologi, ringkasan, dugaan motif (`SuspectController` + `TimelineEventController` shallow di bawah `cases`, satu `CaseItemPolicy` via `#[UsePolicy]` yang ikut `CaseRecordPolicy::update`, `Suspect::LEGAL_STATUSES` dugaan|tersangka|putusan, kolom baru `is_active`, `CaseController@updateAnalysis` untuk ringkasan/motif, komponen `<x-legal-status>`, tes `SuspectTimelineTest`)
 - [ ] Tahap 7: audit log
 - [ ] Tahap 8: pencarian dan filter
 - [ ] Tahap 9: dashboard statistik (Chart.js) dan laporan cetak

@@ -17,6 +17,9 @@
             <x-status-badge :status="$case->status" />
         </div>
         <div class="d-flex flex-wrap gap-2">
+            <a href="{{ route('cases.timeline-events.index', $case) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-clock-history" aria-hidden="true"></i> Kronologi
+            </a>
             @can('update', $case)
                 <a href="{{ route('cases.edit', $case) }}" class="btn btn-primary">
                     <i class="bi bi-pencil" aria-hidden="true"></i> Ubah kasus
@@ -151,6 +154,75 @@
                             <td colspan="6" class="empty-state">
                                 <i class="bi bi-box-seam" aria-hidden="true"></i>
                                 Belum ada barang bukti. Tambahkan bukti fisik atau unggah bukti digital dengan tombol di atas.
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="card mt-3" id="pihak-terkait" aria-labelledby="judul-pihak">
+        <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+            <div>
+                <h2 class="card-title" id="judul-pihak">Pihak terkait ({{ $case->suspects->count() }})</h2>
+                <p class="text-muted small mb-0 mt-1">Status hukum terpisah dari status penanganan kasus dan bukan kesimpulan bersalah.</p>
+            </div>
+            @can('update', $case)
+                <a href="{{ route('cases.suspects.create', $case) }}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-person-plus" aria-hidden="true"></i> Tambah pihak terkait
+                </a>
+            @endcan
+        </div>
+        <div class="table-responsive">
+            <table class="table table-app mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Nama atau nama samaran</th>
+                        <th scope="col">Status hukum</th>
+                        <th scope="col">Keterkaitan dengan kasus</th>
+                        <th scope="col">Status data</th>
+                        <th scope="col"><span class="visually-hidden">Aksi</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($case->suspects as $suspect)
+                        <tr @class(['row-inactive' => ! $suspect->is_active])>
+                            <td class="fw-medium text-break">{{ $suspect->name }}</td>
+                            <td class="text-nowrap"><x-legal-status :status="$suspect->legal_status" /></td>
+                            <td class="text-pre-line small">{{ $suspect->relation_description }}</td>
+                            <td>
+                                <span class="badge-status {{ $suspect->is_active ? 'badge-aktif' : 'badge-nonaktif' }}">{{ $suspect->is_active ? 'Aktif' : 'Nonaktif' }}</span>
+                            </td>
+                            <td class="text-end text-nowrap">
+                                @can('update', $suspect)
+                                    <a href="{{ route('suspects.edit', $suspect) }}" class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-pencil" aria-hidden="true"></i> Ubah
+                                    </a>
+                                @endcan
+                                @can('toggleActive', $suspect)
+                                    <form action="{{ route('suspects.toggle-active', $suspect) }}" method="POST" class="d-inline"
+                                          data-confirm="{{ $suspect->is_active ? "Nonaktifkan pihak terkait {$suspect->name}? Data tetap tersimpan dan bisa diaktifkan kembali." : "Aktifkan kembali pihak terkait {$suspect->name}?" }}">
+                                        @csrf
+                                        @method('PATCH')
+                                        @if ($suspect->is_active)
+                                            <button type="submit" class="btn btn-outline-danger btn-sm">
+                                                <i class="bi bi-slash-circle" aria-hidden="true"></i> Nonaktifkan
+                                            </button>
+                                        @else
+                                            <button type="submit" class="btn btn-outline-success btn-sm">
+                                                <i class="bi bi-check-circle" aria-hidden="true"></i> Aktifkan
+                                            </button>
+                                        @endif
+                                    </form>
+                                @endcan
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="empty-state">
+                                <i class="bi bi-people" aria-hidden="true"></i>
+                                Belum ada pihak terkait. Tambahkan dengan tombol di atas bila sudah ada pihak yang diduga terlibat.
                             </td>
                         </tr>
                     @endforelse

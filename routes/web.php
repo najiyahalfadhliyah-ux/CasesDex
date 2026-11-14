@@ -4,6 +4,8 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CaseController;
 use App\Http\Controllers\EvidenceController;
+use App\Http\Controllers\SuspectController;
+use App\Http\Controllers\TimelineEventController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -30,6 +32,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/evidence/{evidence}/download/{hashCheck?}', [EvidenceController::class, 'download'])
         ->middleware('signed')->scopeBindings()->name('evidence.download');
     Route::post('/evidence/{evidence}/reupload', [EvidenceController::class, 'reupload'])->name('evidence.reupload');
+
+    // Pihak terkait (tampil di detail kasus) dan kronologi. Hak akses lewat CaseItemPolicy / CaseRecordPolicy.
+    Route::resource('cases.suspects', SuspectController::class)->shallow()->only(['create', 'store', 'edit', 'update']);
+    Route::patch('/suspects/{suspect}/toggle-active', [SuspectController::class, 'toggleActive'])->name('suspects.toggle-active');
+    Route::resource('cases.timeline-events', TimelineEventController::class)->shallow()->only(['index', 'create', 'store', 'edit', 'update']);
+    Route::patch('/timeline-events/{timeline_event}/toggle-active', [TimelineEventController::class, 'toggleActive'])->name('timeline-events.toggle-active');
+    Route::patch('/cases/{case}/analysis', [CaseController::class, 'updateAnalysis'])->name('cases.analysis');
     Route::post('/evidence/{evidence}/hash-check', [EvidenceController::class, 'checkHash'])->name('evidence.hash-check');
     Route::patch('/evidence/{evidence}/toggle-active', [EvidenceController::class, 'toggleActive'])->name('evidence.toggle-active');
 

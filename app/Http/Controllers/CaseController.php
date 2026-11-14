@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCaseRequest;
+use App\Http\Requests\UpdateCaseAnalysisRequest;
 use App\Http\Requests\UpdateCaseRequest;
 use App\Http\Requests\UpdateCaseStatusRequest;
 use App\Models\CaseRecord;
@@ -34,7 +35,7 @@ class CaseController extends Controller
     {
         Gate::authorize('view', $case);
 
-        $case->load(['officer', 'creator', 'evidence' => fn ($q) => $q->latest()]);
+        $case->load(['officer', 'creator', 'evidence' => fn ($q) => $q->latest(), 'suspects']);
 
         return view('cases.show', compact('case'));
     }
@@ -88,6 +89,14 @@ class CaseController extends Controller
         $case->update($request->validated());
 
         return redirect()->route('cases.show', $case)->with('success', "Status kasus {$case->case_number} berhasil diubah.");
+    }
+
+    // Ringkasan kasus / dugaan motif dari halaman kronologi (disimpan di tabel cases)
+    public function updateAnalysis(UpdateCaseAnalysisRequest $request, CaseRecord $case): RedirectResponse
+    {
+        $case->update($request->validated());
+
+        return redirect()->route('cases.timeline-events.index', $case)->with('success', 'Ringkasan dan dugaan motif berhasil disimpan.');
     }
 
     public function destroy(CaseRecord $case): RedirectResponse
