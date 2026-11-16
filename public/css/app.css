@@ -288,3 +288,15 @@ h1, h2, h3, .h1, .h2, .h3 { color: var(--primary-dark); letter-spacing: -.01em; 
 .timeline-body { border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); padding: 1rem 1.1rem; margin-top: .35rem; }
 .timeline-body h3 { font-size: 1rem; font-weight: 600; color: var(--text); margin: 0 0 .35rem; }
 .timeline-meta { font-size: .8125rem; color: var(--muted); }
+
+/* ===== Riwayat aktivitas (audit log) ===== */
+.tabular-nums { font-variant-numeric: tabular-nums; }
+.audit-detail { min-width: 18rem; }
+.audit-changes { list-style: none; margin: .4rem 0 0; padding: 0; font-size: .875rem; }
+.audit-changes li { display: grid; grid-template-columns: minmax(7rem, auto) 1fr; gap: .15rem .75rem; padding: .3rem 0; border-top: 1px dashed var(--border); }
+.audit-field { color: var(--muted); font-weight: 500; }
+.audit-diff { display: flex; flex-wrap: wrap; align-items: baseline; gap: .35rem; min-width: 0; }
+.audit-diff del { color: var(--muted); }
+.audit-diff ins { text-decoration: none; color: var(--text); font-weight: 500; background: var(--status-selesai-bg); padding: 0 .25rem; border-radius: 4px; }
+.audit-diff .bi { color: var(--muted); font-size: .75rem; }
+@media (max-width: 575.98px) { .audit-changes li { grid-template-columns: 1fr; } }

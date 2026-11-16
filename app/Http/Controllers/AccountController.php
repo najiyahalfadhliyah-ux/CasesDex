@@ -23,7 +23,7 @@ class AccountController extends Controller
             $data['password'] = $request->validated('password'); // di-hash otomatis oleh cast
         }
 
-        $request->user()->update($data);
+        $request->user()->updateOrFail($data);
 
         return redirect()->route('account.edit')->with('success', 'Pengaturan akun berhasil disimpan.');
     }

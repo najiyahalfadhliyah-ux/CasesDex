@@ -7,10 +7,11 @@ use App\Http\Requests\UpdateTimelineEventRequest;
 use App\Models\CaseRecord;
 use App\Models\TimelineEvent;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-// Halaman kronologi per kasus. Semua perubahan lewat Eloquent supaya Observer audit log (Tahap 7) bisa menangkapnya.
+// Halaman kronologi per kasus. Semua perubahan lewat Eloquent supaya AuditObserver mencatatnya; *OrFail / DB::transaction agar data + audit log satu transaksi.
 class TimelineEventController extends Controller
 {
     public function index(CaseRecord $case): View
@@ -36,7 +37,7 @@ class TimelineEventController extends Controller
 
     public function store(StoreTimelineEventRequest $request, CaseRecord $case): RedirectResponse
     {
-        $event = $case->timelineEvents()->create($request->validated() + ['recorded_by' => $request->user()->id]);
+        $event = DB::transaction(fn () => $case->timelineEvents()->create($request->validated() + ['recorded_by' => $request->user()->id]));
 
         return $this->backToTimeline($case, "Peristiwa \"{$event->title}\" berhasil ditambahkan.");
     }
@@ -54,7 +55,7 @@ class TimelineEventController extends Controller
 
     public function update(UpdateTimelineEventRequest $request, TimelineEvent $timelineEvent): RedirectResponse
     {
-        $timelineEvent->update($request->validated()); // recorded_by tetap pencatat awal
+        $timelineEvent->updateOrFail($request->validated()); // recorded_by tetap pencatat awal
 
         return $this->backToTimeline($timelineEvent->case, "Peristiwa \"{$timelineEvent->title}\" berhasil diperbarui.");
     }
@@ -63,7 +64,7 @@ class TimelineEventController extends Controller
     {
         Gate::authorize('toggleActive', $timelineEvent);
 
-        $timelineEvent->update(['is_active' => ! $timelineEvent->is_active]);
+        $timelineEvent->updateOrFail(['is_active' => ! $timelineEvent->is_active]);
         $status = $timelineEvent->is_active ? 'diaktifkan kembali' : 'dinonaktifkan';
 
         return $this->backToTimeline($timelineEvent->case, "Peristiwa \"{$timelineEvent->title}\" berhasil {$status}.");

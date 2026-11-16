@@ -11,12 +11,13 @@ use App\Models\HashCheck;
 use App\Services\EvidenceIntegrity;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
-// Semua perubahan lewat Eloquent (create/update) supaya Observer audit log di Tahap 7 bisa menangkapnya.
+// Semua perubahan lewat Eloquent (create/update) supaya AuditObserver mencatatnya; *OrFail / DB::transaction agar data + audit log satu transaksi.
 // Berkas disimpan di disk "local" = storage/app/private (tidak bisa dibuka lewat URL langsung).
 class EvidenceController extends Controller
 {
@@ -51,7 +52,7 @@ class EvidenceController extends Controller
             $data['photo_path'] = $request->file('photo')->store('evidence/photos', 'local');
         }
 
-        $evidence = $case->evidence()->create($data);
+        $evidence = DB::transaction(fn () => $case->evidence()->create($data));
 
         return redirect()->route('evidence.show', $evidence)->with('success', "Bukti \"{$evidence->name}\" berhasil ditambahkan.");
     }
@@ -81,7 +82,7 @@ class EvidenceController extends Controller
             $data['photo_path'] = $request->file('photo')->store('evidence/photos', 'local');
         }
 
-        $evidence->update($data);
+        $evidence->updateOrFail($data);
 
         return redirect()->route('evidence.show', $evidence)->with('success', "Bukti \"{$evidence->name}\" berhasil diperbarui.");
     }
@@ -129,7 +130,7 @@ class EvidenceController extends Controller
     {
         Gate::authorize('toggleActive', $evidence);
 
-        $evidence->update(['is_active' => ! $evidence->is_active]);
+        $evidence->updateOrFail(['is_active' => ! $evidence->is_active]);
 
         $status = $evidence->is_active ? 'diaktifkan kembali' : 'dinonaktifkan';
 

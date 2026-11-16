@@ -6,10 +6,11 @@ use App\Models\Evidence;
 use App\Models\HashCheck;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 // Integritas bukti digital. Pembanding selalu hash ASLI (evidence.sha256_hash), yang tidak pernah diubah.
-// Semua catatan lewat Eloquent create supaya Observer audit log (Tahap 7) bisa mencatatnya.
+// Semua catatan lewat Eloquent create supaya AuditObserver mencatatnya (dalam transaksi yang sama).
 class EvidenceIntegrity
 {
     // Hitung ulang hash berkas yang sedang berlaku lalu catat hasilnya
@@ -39,12 +40,12 @@ class EvidenceIntegrity
 
     private function record(Evidence $evidence, User $user, string $computed, array $extra): HashCheck
     {
-        return $evidence->hashChecks()->create($extra + [
+        return DB::transaction(fn () => $evidence->hashChecks()->create($extra + [
             'checked_by' => $user->id,
             'computed_hash' => $computed,
             'stored_hash' => $evidence->sha256_hash,
             'is_match' => hash_equals($evidence->sha256_hash, $computed),
             'checked_at' => now(),
-        ]);
+        ]));
     }
 }

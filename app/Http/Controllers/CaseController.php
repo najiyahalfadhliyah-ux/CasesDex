@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
-// Semua perubahan lewat Eloquent (create/update/delete) supaya Observer audit log di Tahap 7 bisa menangkapnya
+// Semua perubahan lewat Eloquent (create/update/delete) supaya AuditObserver mencatatnya; *OrFail / DB::transaction agar data + audit log satu transaksi
 class CaseController extends Controller
 {
     public function index(Request $request): View
@@ -78,7 +78,7 @@ class CaseController extends Controller
 
     public function update(UpdateCaseRequest $request, CaseRecord $case): RedirectResponse
     {
-        $case->update($request->validated());
+        $case->updateOrFail($request->validated());
 
         return redirect()->route('cases.show', $case)->with('success', "Kasus {$case->case_number} berhasil diperbarui.");
     }
@@ -86,7 +86,7 @@ class CaseController extends Controller
     // Ubah status cepat dari halaman detail
     public function updateStatus(UpdateCaseStatusRequest $request, CaseRecord $case): RedirectResponse
     {
-        $case->update($request->validated());
+        $case->updateOrFail($request->validated());
 
         return redirect()->route('cases.show', $case)->with('success', "Status kasus {$case->case_number} berhasil diubah.");
     }
@@ -94,7 +94,7 @@ class CaseController extends Controller
     // Ringkasan kasus / dugaan motif dari halaman kronologi (disimpan di tabel cases)
     public function updateAnalysis(UpdateCaseAnalysisRequest $request, CaseRecord $case): RedirectResponse
     {
-        $case->update($request->validated());
+        $case->updateOrFail($request->validated());
 
         return redirect()->route('cases.timeline-events.index', $case)->with('success', 'Ringkasan dan dugaan motif berhasil disimpan.');
     }
@@ -103,7 +103,7 @@ class CaseController extends Controller
     {
         Gate::authorize('delete', $case);
 
-        $case->delete(); // soft delete: baris tetap ada, deleted_at terisi
+        $case->deleteOrFail(); // soft delete: baris tetap ada, deleted_at terisi
 
         return redirect()->route('cases.index')->with('success', "Kasus {$case->case_number} berhasil dinonaktifkan.");
     }

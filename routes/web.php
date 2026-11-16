@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CaseController;
 use App\Http\Controllers\EvidenceController;
@@ -53,6 +54,7 @@ Route::middleware('auth')->group(function () {
         // Manajemen pengguna: tanpa destroy, akun dinonaktifkan bukan dihapus
         Route::resource('users', UserController::class)->except(['show', 'destroy']);
         Route::patch('/users/{user}/toggle-active', [UserController::class, 'toggleActive'])->name('users.toggle-active');
-        // audit log, dst.
+        // Riwayat aktivitas: hanya lihat. Sengaja tidak ada route ubah/hapus (append-only).
+        Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
     });
 });

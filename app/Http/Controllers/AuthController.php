@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\AuditLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -16,7 +17,7 @@ class AuthController extends Controller
         return view('auth.login');
     }
 
-    public function login(Request $request): RedirectResponse
+    public function login(Request $request, AuditLogger $audit): RedirectResponse
     {
         $credentials = $request->validate([
             'login' => ['required', 'string'],
@@ -47,11 +48,19 @@ class AuthController extends Controller
         if (Auth::attempt($attempt)) {
             RateLimiter::clear($throttleKey);
             $request->session()->regenerate();
+            $audit->log('auth.login', $request->user(), 'Masuk dari IP '.$request->ip());
 
             return redirect()->intended(route('dashboard'));
         }
 
         RateLimiter::hit($throttleKey, 300); // 300 detik = 5 menit
+
+        // Hanya nama login yang dicatat, kata sandi tidak pernah. Pelaku = Sistem (belum ada pengguna login).
+        $who = 'Login "'.Str::limit($credentials['login'], 100).'" dari IP '.$request->ip();
+        $audit->log('auth.login_failed', null, $who);
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $audit->log('auth.locked', null, $who.', dikunci 5 menit'); // tercatat sekali, saat percobaan ke-5
+        }
 
         // Pesan sengaja umum: tidak memberi tahu apakah username, sandi, atau status akun yang salah
         return back()
@@ -59,8 +68,10 @@ class AuthController extends Controller
             ->onlyInput('login');
     }
 
-    public function logout(Request $request): RedirectResponse
+    public function logout(Request $request, AuditLogger $audit): RedirectResponse
     {
+        $audit->log('auth.logout', $request->user()); // dicatat sebelum sesi dihapus
+
         Auth::logout();
 
         $request->session()->invalidate();

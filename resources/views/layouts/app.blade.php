@@ -33,7 +33,10 @@
 
                 @if (auth()->user()->role === 'admin')
                     <div class="nav-section">Administrasi</div>
-                    <a class="nav-link" href="#"><i class="bi bi-journal-text" aria-hidden="true"></i> Riwayat Aktivitas</a>
+                    <a class="nav-link {{ request()->routeIs('audit-logs.*') ? 'active' : '' }}" href="{{ route('audit-logs.index') }}"
+                       @if (request()->routeIs('audit-logs.*')) aria-current="page" @endif>
+                        <i class="bi bi-journal-text" aria-hidden="true"></i> Riwayat Aktivitas
+                    </a>
                     <a class="nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ route('users.index') }}"
                        @if (request()->routeIs('users.*')) aria-current="page" @endif>
                         <i class="bi bi-people" aria-hidden="true"></i> Manajemen Pengguna

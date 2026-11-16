@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 
-// Semua perubahan lewat Eloquent (create/update) supaya Observer audit log di Tahap 7 bisa menangkapnya
+// Semua perubahan lewat Eloquent (create/update) supaya AuditObserver mencatatnya; *OrFail / DB::transaction agar data + audit log satu transaksi
 class UserController extends Controller
 {
     public function index(): View
@@ -28,7 +28,7 @@ class UserController extends Controller
     public function store(StoreUserRequest $request): RedirectResponse
     {
         // Password di-hash otomatis oleh cast 'hashed' di model User
-        $user = User::create($request->validated() + ['is_active' => true]);
+        $user = DB::transaction(fn () => User::create($request->validated() + ['is_active' => true]));
 
         return redirect()->route('users.index')->with('success', "Akun {$user->name} berhasil ditambahkan.");
     }
@@ -46,7 +46,7 @@ class UserController extends Controller
             unset($data['password']); // kata sandi lama tetap dipakai
         }
 
-        $user->update($data);
+        $user->updateOrFail($data);
 
         return redirect()->route('users.index')->with('success', "Akun {$user->name} berhasil diperbarui.");
     }
@@ -57,7 +57,7 @@ class UserController extends Controller
             return back()->with('error', 'Anda tidak dapat menonaktifkan akun sendiri.');
         }
 
-        $user->update(['is_active' => ! $user->is_active]);
+        $user->updateOrFail(['is_active' => ! $user->is_active]);
 
         // Keluarkan sesi yang sedang berjalan agar akun nonaktif langsung tidak bisa dipakai
         if (! $user->is_active && config('session.driver') === 'database') {
