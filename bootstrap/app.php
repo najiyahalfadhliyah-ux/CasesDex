@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => \App\Http\Middleware\EnsureRole::class,
         ]);
+        // Setiap request web: akun nonaktif dikeluarkan (temuan T-01 Tahap 10)
+        $middleware->web(append: [\App\Http\Middleware\EnsureUserIsActive::class]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
