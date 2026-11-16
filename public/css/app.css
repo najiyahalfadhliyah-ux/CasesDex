@@ -23,6 +23,10 @@
     --status-ditutup-bg: #F1F5F9;          --status-ditutup: #334155;
     --status-ditangguhkan-bg: #FEE2E2;     --status-ditangguhkan: #991B1B;
 
+    /* Grafik kategori: urutan tetap mengikuti CaseRecord::CATEGORIES. Turunan navy & emas tua,
+       lolos cek buta warna (validator dataviz). Warna status tidak dipakai untuk kategori. */
+    --chart-1: #2563EB; --chart-2: #D97706; --chart-3: #0D9488; --chart-4: #7C3AED; --chart-5: #DB2777;
+
     /* Variabel bawaan Bootstrap dipetakan ke token di atas */
     --bs-body-font-family: var(--font-sans);
     --bs-body-bg: var(--bg);
@@ -302,3 +306,24 @@ h1, h2, h3, .h1, .h2, .h3 { color: var(--primary-dark); letter-spacing: -.01em; 
 .audit-diff ins { text-decoration: none; color: var(--text); font-weight: 500; background: var(--status-selesai-bg); padding: 0 .25rem; border-radius: 4px; }
 .audit-diff .bi { color: var(--muted); font-size: .75rem; }
 @media (max-width: 575.98px) { .audit-changes li { grid-template-columns: 1fr; } }
+
+/* Tahap 9: grafik dashboard. Tinggi tetap agar tidak melompat saat Chart.js menggambar; lebar mengikuti kartu */
+.chart-box { position: relative; height: 260px; }
+.chart-data summary { color: var(--primary); font-size: .875rem; font-weight: 500; cursor: pointer; padding: .5rem 0; }
+.chart-data summary:hover { text-decoration: underline; }
+
+/* Pengingat tenggat arsip */
+.reminder-list li { display: flex; justify-content: space-between; align-items: flex-start; gap: .75rem; padding: .75rem 0; border-top: 1px solid var(--border); }
+.reminder-list li:first-child { border-top: 0; padding-top: 0; }
+.badge-tenggat-dekat { background: var(--status-dalam-penanganan-bg); color: var(--status-dalam-penanganan); }
+.badge-tenggat-lewat { background: var(--status-ditangguhkan-bg); color: var(--status-ditangguhkan); }
+
+/* Cetak laporan (fitur cetak browser): tanpa navigasi, latar putih, kartu tidak terpotong antar halaman */
+@media print {
+    .sidebar, .app-navbar, .skip-link, .no-print { display: none !important; }
+    body { background: var(--surface); }
+    main { padding: 0 !important; }
+    .card { break-inside: avoid; }
+    .stat-card .stat-icon { display: none; }
+    a { color: inherit; text-decoration: none; }
+}

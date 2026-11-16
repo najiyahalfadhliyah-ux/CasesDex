@@ -30,6 +30,10 @@
                    @if (request()->routeIs('archives.*')) aria-current="page" @endif>
                     <i class="bi bi-archive" aria-hidden="true"></i> Arsip Kasus
                 </a>
+                <a class="nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}" href="{{ route('reports.index') }}"
+                   @if (request()->routeIs('reports.*')) aria-current="page" @endif>
+                    <i class="bi bi-file-earmark-bar-graph" aria-hidden="true"></i> Statistik dan Laporan
+                </a>
                 <a class="nav-link {{ request()->routeIs('account.*') ? 'active' : '' }}" href="{{ route('account.edit') }}"
                    @if (request()->routeIs('account.*')) aria-current="page" @endif>
                     <i class="bi bi-person-gear" aria-hidden="true"></i> Pengaturan Akun

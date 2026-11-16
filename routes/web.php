@@ -5,7 +5,9 @@ use App\Http\Controllers\ArchiveController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CaseController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EvidenceController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SuspectController;
 use App\Http\Controllers\TimelineEventController;
 use App\Http\Controllers\UserController;
@@ -22,7 +24,8 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    Route::get('/dashboard', fn () => view('dashboard'))->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 
     // Kasus: hak akses admin/petugas diatur CaseRecordPolicy, bukan middleware role
     Route::resource('cases', CaseController::class);
