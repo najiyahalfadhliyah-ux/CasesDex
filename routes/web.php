@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\ArchiveController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CaseController;
@@ -26,6 +27,11 @@ Route::middleware('auth')->group(function () {
     // Kasus: hak akses admin/petugas diatur CaseRecordPolicy, bukan middleware role
     Route::resource('cases', CaseController::class);
     Route::patch('/cases/{case}/status', [CaseController::class, 'updateStatus'])->name('cases.status');
+
+    // Arsip kasus: semua peran melihat daftar (disaring visibleTo); arsip/buka arsip khusus admin lewat CaseRecordPolicy::archive
+    Route::get('/archives', [ArchiveController::class, 'index'])->name('archives.index');
+    Route::post('/cases/{case}/archive', [ArchiveController::class, 'store'])->name('cases.archive');
+    Route::delete('/cases/{case}/archive', [ArchiveController::class, 'destroy'])->name('cases.unarchive');
 
     // Barang bukti: tambah di bawah kasus, sisanya langsung /evidence/{id}. Hak akses lewat EvidencePolicy.
     Route::resource('cases.evidence', EvidenceController::class)->shallow()->only(['create', 'store', 'show', 'edit', 'update']);

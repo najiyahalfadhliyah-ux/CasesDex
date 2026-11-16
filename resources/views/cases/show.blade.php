@@ -15,6 +15,9 @@
             <p class="case-number fs-5 mb-1">{{ $case->case_number }}</p>
             <h1 class="h3 fw-bold mb-2">{{ $case->title }}</h1>
             <x-status-badge :status="$case->status" />
+            @if ($case->archive_status === 'diarsipkan')
+                <span class="badge-status badge-arsip">Diarsipkan</span>
+            @endif
         </div>
         <div class="d-flex flex-wrap gap-2">
             <a href="{{ route('cases.timeline-events.index', $case) }}" class="btn btn-outline-secondary">
@@ -62,6 +65,43 @@
         </section>
     @endcan
 
+    @can('archive', $case)
+        <section class="card mb-3" aria-labelledby="judul-arsip">
+            <div class="card-header"><h2 class="card-title" id="judul-arsip">Arsip kasus</h2></div>
+            <div class="card-body">
+                @if ($case->archive_status === 'diarsipkan')
+                    <form action="{{ route('cases.unarchive', $case) }}" method="POST" class="d-flex flex-wrap align-items-center gap-3"
+                          data-confirm="Buka kembali arsip kasus {{ $case->case_number }}? Kasus akan tampil lagi di daftar kasus aktif.">
+                        @csrf
+                        @method('DELETE')
+                        <p class="mb-0">
+                            Diarsipkan {{ $case->archived_at?->format('d/m/Y') }} dengan alasan
+                            <strong>{{ App\Models\CaseRecord::ARCHIVE_REASONS[$case->archive_reason] ?? '-' }}</strong>.
+                        </p>
+                        <button type="submit" class="btn btn-outline-primary">
+                            <i class="bi bi-box-arrow-up" aria-hidden="true"></i> Buka arsip
+                        </button>
+                    </form>
+                @else
+                    <form action="{{ route('cases.archive', $case) }}" method="POST" novalidate class="row gx-3 align-items-start"
+                          data-confirm="Arsipkan kasus {{ $case->case_number }}? Kasus tidak tampil di daftar kasus aktif, tetapi tetap bisa dicari dan dibuka kembali.">
+                        @csrf
+                        <div class="col-md-6">
+                            <x-select name="archive_reason" label="Alasan arsip" :options="App\Models\CaseRecord::ARCHIVE_REASONS"
+                                      placeholder="Pilih alasan" required
+                                      help="Batas arsip {{ $case->archive_deadline->format('d/m/Y') }} (enam bulan sejak mulai investigasi) hanya sebagai informasi." />
+                        </div>
+                        <div class="col-md-6 pt-md-4 mt-md-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-archive" aria-hidden="true"></i> Arsipkan kasus
+                            </button>
+                        </div>
+                    </form>
+                @endif
+            </div>
+        </section>
+    @endcan
+
     <div class="row g-3">
         <div class="col-lg-5">
             <section class="card h-100">
@@ -75,6 +115,11 @@
                         <dt>Mulai investigasi</dt><dd>{{ $case->investigation_start_date->format('d/m/Y') }}</dd>
                         <dt>Tanggal selesai</dt><dd>{{ $case->completed_date?->format('d/m/Y') ?? '-' }}</dd>
                         <dt>Tenggat arsip</dt><dd>{{ $case->archive_deadline->format('d/m/Y') }}</dd>
+                        <dt>Status arsip</dt><dd>{{ App\Models\CaseRecord::ARCHIVE_STATUSES[$case->archive_status] ?? '-' }}</dd>
+                        @if ($case->archive_status === 'diarsipkan')
+                            <dt>Tanggal arsip</dt><dd>{{ $case->archived_at?->format('d/m/Y') }}</dd>
+                            <dt>Alasan arsip</dt><dd>{{ App\Models\CaseRecord::ARCHIVE_REASONS[$case->archive_reason] ?? '-' }}</dd>
+                        @endif
                         <dt>Petugas</dt><dd>{{ $case->officer?->name ?? 'Belum ditugaskan' }}</dd>
                         <dt>Dicatat oleh</dt><dd>{{ $case->creator?->name ?? '-' }}</dd>
                     </dl>

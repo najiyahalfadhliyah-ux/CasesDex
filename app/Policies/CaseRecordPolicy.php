@@ -39,6 +39,12 @@ class CaseRecordPolicy
         return false;
     }
 
+    // Mengarsipkan / membuka arsip: khusus admin (lewat before)
+    public function archive(User $user, CaseRecord $case): bool
+    {
+        return false;
+    }
+
     // Menugaskan atau memindahkan petugas
     public function assign(User $user): bool
     {

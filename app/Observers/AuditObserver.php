@@ -54,9 +54,13 @@ class AuditObserver
                 continue;
             }
 
-            $action = $field === 'is_active'
-                ? self::PREFIX[$model::class].($model->is_active ? '.activated' : '.deactivated')
-                : (self::SPECIAL[$model::class][$field] ?? self::PREFIX[$model::class].'.updated');
+            $action = match (true) {
+                $field === 'is_active' => self::PREFIX[$model::class].($model->is_active ? '.activated' : '.deactivated'),
+                // Tiga kolom arsip berubah bersama -> satu catatan arsip / buka arsip
+                $model instanceof CaseRecord && in_array($field, ['archive_status', 'archived_at', 'archive_reason'], true)
+                    => $model->archive_status === 'diarsipkan' ? 'case.archived' : 'case.unarchived',
+                default => self::SPECIAL[$model::class][$field] ?? self::PREFIX[$model::class].'.updated',
+            };
 
             $groups[$action][$field] = [
                 'old' => $this->display($field, $model->getOriginal($field)),
@@ -106,6 +110,8 @@ class AuditObserver
             $value instanceof DateTimeInterface => $value->format($value->format('H:i') === '00:00' ? 'd/m/Y' : 'd/m/Y H:i'),
             $field === 'assigned_to' => $value ? User::find($value)?->name : null,
             $field === 'status' => CaseRecord::STATUSES[$value] ?? $value,
+            $field === 'archive_status' => CaseRecord::ARCHIVE_STATUSES[$value] ?? $value,
+            $field === 'archive_reason' => CaseRecord::ARCHIVE_REASONS[$value] ?? $value,
             default => $value,
         };
     }

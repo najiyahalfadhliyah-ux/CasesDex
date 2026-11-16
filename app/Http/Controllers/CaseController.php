@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CaseSearchRequest;
 use App\Http\Requests\StoreCaseRequest;
 use App\Http\Requests\UpdateCaseAnalysisRequest;
 use App\Http\Requests\UpdateCaseRequest;
@@ -11,7 +12,6 @@ use App\Models\User;
 use App\Services\CaseNumberGenerator;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -20,15 +20,19 @@ use Illuminate\View\View;
 // Semua perubahan lewat Eloquent (create/update/delete) supaya AuditObserver mencatatnya; *OrFail / DB::transaction agar data + audit log satu transaksi
 class CaseController extends Controller
 {
-    public function index(Request $request): View
+    public function index(CaseSearchRequest $request): View
     {
+        $filters = $request->validated();
+
         $cases = CaseRecord::visibleTo($request->user())
+            ->filter($filters)
             ->with('officer')
             // Nomor terbesar di atas. Format AK-TAHUN-0001 selalu sama panjang, jadi urut teks = urut nomor
             ->orderByDesc('case_number')
-            ->paginate(15);
+            ->paginate(15)
+            ->withQueryString(); // filter tetap terbawa saat pindah halaman
 
-        return view('cases.index', compact('cases'));
+        return view('cases.index', compact('cases', 'filters'));
     }
 
     public function show(CaseRecord $case): View

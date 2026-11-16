@@ -119,6 +119,8 @@ h1, h2, h3, .h1, .h2, .h3 { color: var(--primary-dark); letter-spacing: -.01em; 
 .badge-selesai          { background: var(--status-selesai-bg); color: var(--status-selesai); }
 .badge-ditutup          { background: var(--status-ditutup-bg); color: var(--status-ditutup); }
 .badge-ditangguhkan     { background: var(--status-ditangguhkan-bg); color: var(--status-ditangguhkan); }
+/* Status arsip: netral, outline navy agar beda dari badge status penanganan "Ditutup" */
+.badge-arsip            { background: var(--surface); color: var(--primary); border: 1px solid var(--primary); }
 
 /* Status akun pengguna (memakai warna status yang sama) */
 .badge-aktif    { background: var(--status-selesai-bg); color: var(--status-selesai); }
