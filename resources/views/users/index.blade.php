@@ -87,14 +87,3 @@
 
     <div class="mt-3">{{ $users->links() }}</div>
 @endsection
-
-@push('scripts')
-<script>
-    // Konfirmasi sebelum aktifkan/nonaktifkan. Teks diambil dari data-confirm (sudah di-escape Blade).
-    document.querySelectorAll('form[data-confirm]').forEach(function (form) {
-        form.addEventListener('submit', function (event) {
-            if (!confirm(form.dataset.confirm)) event.preventDefault();
-        });
-    });
-</script>
-@endpush

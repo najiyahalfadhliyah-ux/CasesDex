@@ -180,11 +180,6 @@
 
 @push('scripts')
 <script>
-    document.querySelectorAll('form[data-confirm]').forEach(function (form) {
-        form.addEventListener('submit', function (event) {
-            if (!confirm(form.dataset.confirm)) event.preventDefault();
-        });
-    });
     // Cegah klik ganda saat pemeriksaan berjalan
     document.querySelectorAll('form[data-uploading]').forEach(function (form) {
         form.addEventListener('submit', function () {

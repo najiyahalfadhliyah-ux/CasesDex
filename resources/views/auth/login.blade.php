@@ -1,59 +1,101 @@
 @extends('layouts.guest')
 
-@section('title', 'Login - CasesDex')
+@section('title', 'Masuk - CasesDex')
+
+@php
+    // Keadaan halaman dibaca dari pesan error AuthController (controller tidak mengirim flag terpisah).
+    // shortcut: cocok teks pesan; kalau kalimat di AuthController diubah, ubah juga di sini.
+    $loginError = $errors->first('login');
+    $locked = str_starts_with($loginError, 'Terlalu banyak percobaan');
+    $wrongCredentials = $loginError === 'Email/username atau kata sandi salah.';
+    $passwordInvalid = $errors->has('password') || $wrongCredentials;
+@endphp
 
 @section('content')
-<div class="row g-0 min-vh-100">
-    {{-- Panel kiri hanya tampil di laptop --}}
-    <aside class="col-lg-5 auth-panel d-none d-lg-flex flex-column justify-content-between p-5">
-        <a href="{{ route('home') }}" class="text-white text-decoration-none fw-bold d-flex align-items-center gap-2">
-            <i class="bi bi-archive-fill" style="color:#FCD34D" aria-hidden="true"></i> Casesdex
-        </a>
+<div class="auth-layout">
+    {{-- Panel kiri: identitas. Disembunyikan di bawah 992px agar form tampil penuh. --}}
+    <aside class="auth-panel d-none d-lg-flex">
+        <p class="auth-kicker">CasesDex / Arsip kasus digital</p>
+
         <div>
-            <h2 class="h3 fw-bold mb-3">Sistem Informasi CasesDex dan Dokumentasi Barang Bukti</h2>
-            <p class="mb-0">Akses hanya untuk admin dan petugas yang terdaftar.</p>
+            {{-- Panel selalu gelap, jadi selalu pakai logo versi gelap --}}
+            <img src="{{ asset('images/logo-simbol-gelap.png') }}" alt="" height="150" class="auth-symbol">
+            <h2 class="auth-title">Setiap kasus terstruktur. Setiap bukti terjaga.</h2>
+            <p class="auth-tagline">Satu ruang kerja untuk dokumentasi kasus, barang bukti, dan jejak aktivitas.</p>
+            <ul class="auth-chips">
+                <li>SHA-256</li>
+                <li>Akses berbasis peran</li>
+                <li>Audit aktivitas</li>
+            </ul>
         </div>
-        <small>Memuat semua data Kasus yang kamu cari.</small>
+
+        <small>Internal · Seluruh data demonstrasi bersifat fiktif</small>
     </aside>
 
-    <main class="col-lg-7 d-flex align-items-center justify-content-center p-4">
-        <div class="w-100 card-narrow">
-            <a href="{{ route('home') }}" class="d-inline-flex align-items-center gap-1 text-decoration-none small mb-4">
-                <i class="bi bi-arrow-left" aria-hidden="true"></i> Beranda
-            </a>
-            <h1 class="h3 fw-bold mb-1">Masuk</h1>
-            <p class="text-muted mb-4">Gunakan email atau username akun Anda.</p>
+    {{-- Panel kanan: form --}}
+    <main class="auth-main" id="konten">
+        <div class="auth-form">
+            @if (Route::has('home'))
+                <a href="{{ route('home') }}" class="auth-back">
+                    <i class="bi bi-arrow-left" aria-hidden="true"></i> Beranda
+                </a>
+            @endif
+
+            <x-logo type="teks" height="150" alt="CasesDex" class="auth-logo" />
+
+            <h1 class="auth-heading">Selamat datang kembali</h1>
+            <p class="text-muted mb-4">Masuk untuk mengakses ruang kerja CasesDex.</p>
+
+            @if ($errors->any())
+                <div id="login-alert" @class(['auth-alert', 'auth-alert-locked' => $locked]) role="alert">
+                    <i class="bi {{ $locked ? 'bi-lock' : 'bi-exclamation-circle' }}" aria-hidden="true"></i>
+                    <div>
+                        <p class="auth-alert-title">{{ $locked ? 'Akun dikunci sementara' : 'Gagal masuk' }}</p>
+                        @foreach ($errors->all() as $message)
+                            <p class="mb-0">{{ $message }}</p>
+                        @endforeach
+                        @if ($locked)
+                            <p class="mb-0 mt-1">Percobaan masuk dibatasi untuk melindungi akun. Hubungi admin bila Anda lupa kata sandi.</p>
+                        @endif
+                    </div>
+                </div>
+            @endif
 
             <form action="{{ route('login') }}" method="POST" novalidate>
                 @csrf
 
                 <div class="mb-3">
-                    <label for="login" class="form-label">Email atau Username</label>
-                    <div class="input-group has-validation">
+                    <label for="login" class="form-label">Email atau username</label>
+                    <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-person" aria-hidden="true"></i></span>
                         <input id="login" name="login" type="text" value="{{ old('login') }}" autocomplete="username"
-                               class="form-control @error('login') is-invalid @enderror" required autofocus
-                               @error('login') aria-describedby="login-error" @enderror>
-                        @error('login')
-                            <div id="login-error" class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                               @class(['form-control', 'is-invalid' => $errors->has('login')])
+                               required autofocus
+                               @if ($errors->has('login')) aria-invalid="true" aria-describedby="login-alert" @endif>
                     </div>
                 </div>
 
                 <div class="mb-4">
-                    <label for="password" class="form-label">Kata Sandi</label>
+                    <label for="password" class="form-label">Kata sandi</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-lock" aria-hidden="true"></i></span>
-                        <input id="password" name="password" type="password" autocomplete="current-password" class="form-control" required>
-                        <button type="button" class="btn btn-outline-secondary" id="togglePassword"
+                        <input id="password" name="password" type="password" autocomplete="current-password"
+                               @class(['form-control', 'is-invalid' => $passwordInvalid])
+                               required
+                               @if ($passwordInvalid) aria-invalid="true" aria-describedby="login-alert" @endif>
+                        <button type="button" class="btn btn-secondary" id="togglePassword"
                                 aria-label="Tampilkan kata sandi" aria-pressed="false">
                             <i class="bi bi-eye" aria-hidden="true"></i>
                         </button>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-accent w-100">Masuk</button>
+                <button type="submit" class="btn btn-primary w-100">
+                    Masuk ke dashboard <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                </button>
             </form>
+
+            <p class="auth-note">Akun hanya dibuat oleh Admin. Tidak ada pendaftaran mandiri.</p>
         </div>
     </main>
 </div>
